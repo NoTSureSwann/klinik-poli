@@ -1,39 +1,33 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/pegawai.dart';
+import '../helpers/api_client.dart';
 
-final FirebaseFirestore _db = FirebaseFirestore.instance;
-
-class PegawaiService{
-  addPegawai(Pegawai pegawai) async {
-    await _db.collection("pegawai").add(pegawai.toMap());
+class PegawaiService {
+  Future<void> addPegawai(Pegawai pegawai) async {
+    await ApiClient().post("?entity=pegawai", pegawai.toMap());
   }
 
-  updatePegawai(Pegawai pegawai) async {
-    await _db.collection("pegawai").doc(pegawai.id).update(pegawai.toMap());
+  Future<void> updatePegawai(Pegawai pegawai) async {
+    await ApiClient().put("?entity=pegawai", pegawai.toMap());
   }
 
   Future<void> deletePegawai(String id) async {
-    await _db.collection("pegawai").doc(id).delete();
+    await ApiClient().delete("?entity=pegawai&id=$id");
   }
 
   Future<List<Pegawai>> retrievePegawai() async {
-    QuerySnapshot<Map<String, dynamic>> snapshot =
-    await _db.collection("pegawai").get();
-    return snapshot.docs
-        .map((docSnapshot) => Pegawai.fromDocumentSnapshot(docSnapshot))
-        .toList();
+    final response = await ApiClient().get("?entity=pegawai");
+    final data = response.data['data'] as List;
+    return data.map((json) => Pegawai.fromJson(json)).toList();
   }
 
-  Stream<List<Pegawai>> streamPegawai() {
-    return _db.collection("pegawai").snapshots().map((snap) =>
-        snap.docs.map((d) => Pegawai.fromDocumentSnapshot(d)).toList());
+  Stream<List<Pegawai>> streamPegawai() async* {
+    yield await retrievePegawai();
   }
 
   Future<List<Pegawai>> retrieveDokter() async {
-    final snap = await _db
-        .collection("pegawai")
-        .where('jabatanPegawai', isEqualTo: 'Dokter')
-        .get();
-    return snap.docs.map((d) => Pegawai.fromDocumentSnapshot(d)).toList();
+    final response = await ApiClient().get("?entity=pegawai");
+    final data = response.data['data'] as List;
+    final all = data.map((json) => Pegawai.fromJson(json)).toList();
+    return all.where((p) => p.jabatanPegawai == 'Dokter').toList();
   }
 }

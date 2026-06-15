@@ -44,7 +44,7 @@ class PasieniUpdateFormState extends State<PasienUpdateForm> {
       body: SingleChildScrollView(
         child: Container(
           padding: EdgeInsets.fromLTRB(15*fem, 15*fem, 15*fem, 0*fem),
-          child: Form(
+          child: Form(autovalidateMode: AutovalidateMode.onUserInteraction, 
             key: _formKey,
             child: Column(
               children: [
@@ -94,12 +94,12 @@ class PasieniUpdateFormState extends State<PasienUpdateForm> {
             telpPasien: _telpPasienCtrl.text,
             alamatPasien: _alamatPasienCtrl.text,
           );
-          await PasienService().updatePasien(pasien).then((value) {
-            Navigator.pushReplacement(context,
-                MaterialPageRoute(builder:
-                    (context) => PasienDetailPage(pasien: pasien))
-            );
-          });
+          await PasienService().updatePasien(pasien);
+          if (!mounted) return;
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder:
+                  (context) => PasienDetailPage(pasien: pasien))
+          );
         },
         child: Text("Ubah")
     );

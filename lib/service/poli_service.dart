@@ -1,54 +1,47 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/poli.dart';
+import '../helpers/api_client.dart';
 
-final FirebaseFirestore _db = FirebaseFirestore.instance;
-
-class PoliService{
-  addPoli(Poli poli) async {
-    await _db.collection("poli").add(poli.toMap());
+class PoliService {
+  Future<void> addPoli(Poli poli) async {
+    await ApiClient().post("?entity=poli", poli.toMap());
   }
 
-  updatePoli(Poli poli) async {
-    await _db.collection("poli").doc(poli.id).update(poli.toMap());
+  Future<void> updatePoli(Poli poli) async {
+    await ApiClient().put("?entity=poli", poli.toMap());
   }
 
   Future<void> deletePoli(String id) async {
-    await _db.collection("poli").doc(id).delete();
+    await ApiClient().delete("?entity=poli&id=$id");
   }
 
   Future<List<Poli>> retrievePoli() async {
-    QuerySnapshot<Map<String, dynamic>> snapshot =
-    await _db.collection("poli").get();
-    return snapshot.docs
-        .map((docSnapshot) => Poli.fromDocumentSnapshot(docSnapshot))
-        .toList();
+    final response = await ApiClient().get("?entity=poli");
+    final data = response.data['data'] as List;
+    return data.map((json) => Poli.fromJson(json)).toList();
   }
 
-  Stream<List<Poli>> streamPoli() {
-    return _db.collection("poli").snapshots().map((snap) =>
-        snap.docs.map((d) => Poli.fromDocumentSnapshot(d)).toList());
+  Stream<List<Poli>> streamPoli() async* {
+    yield await retrievePoli();
   }
 
   Future<bool> isKodePoliUnique(String kode, {String? excludeId}) async {
-    final snap = await _db
-        .collection("poli")
-        .where('kode_poli', isEqualTo: kode)
-        .get();
-    if (snap.docs.isEmpty) return true;
-    if (excludeId != null &&
-        snap.docs.length == 1 &&
-        snap.docs.first.id == excludeId) {
+    final list = await retrievePoli();
+    final matching = list.where((p) => p.kode_poli == kode).toList();
+    if (matching.isEmpty) return true;
+    if (excludeId != null && matching.length == 1 && matching.first.id == excludeId) {
       return true;
     }
     return false;
   }
 
   Future<bool> hasActiveJadwal(String poliId) async {
-    final snap = await _db
-        .collection("jadwal_poli")
-        .where('poliId', isEqualTo: poliId)
-        .where('statusAktif', isEqualTo: true)
-        .get();
-    return snap.docs.isNotEmpty;
+    final response = await ApiClient().get("?entity=jadwal_poli");
+    final data = response.data['data'] as List;
+    for (var j in data) {
+      if (j['id_poli'] == poliId && (j['status_aktif'] == 1 || j['status_aktif'] == true)) {
+        return true;
+      }
+    }
+    return false;
   }
 }

@@ -1,12 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/antrian.dart';
 import '../model/poli.dart';
 import '../model/jadwal_poli.dart';
 import '../helpers/queue_algorithm.dart';
+import '../helpers/api_client.dart';
 
 class AntrianService {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
-
   Future<String> daftarAntrian({
     required Poli poli,
     JadwalPoli? jadwal,
@@ -14,125 +12,87 @@ class AntrianService {
     required String tanggal,
     required bool prioritas,
   }) async {
-    final dup = await _db
-        .collection("antrian")
-        .where('poliId', isEqualTo: poli.id)
-        .where('pasienId', isEqualTo: pasienId)
-        .where('tanggal', isEqualTo: tanggal)
-        .where('status', whereIn: [AntrianStatus.menunggu, AntrianStatus.dipanggil])
-        .get();
-    if (dup.docs.isNotEmpty) {
+    final resAll = await ApiClient().get("?entity=antrian&poli_id=${poli.id}&tanggal=$tanggal");
+    final allAntrian = (resAll.data['data'] as List).map((e) => Antrian.fromJson(e)).toList();
+
+    final dup = allAntrian.where((a) => a.pasienId == pasienId && (a.status == AntrianStatus.menunggu || a.status == AntrianStatus.dipanggil));
+    if (dup.isNotEmpty) {
       throw Exception('Pasien ini sudah terdaftar di antrian poli ini hari ini.');
     }
 
     final kuotaMax = jadwal != null ? jadwal.kuota : poli.kuota_harian;
-    Query<Map<String, dynamic>> countQuery = _db
-        .collection("antrian")
-        .where('poliId', isEqualTo: poli.id)
-        .where('tanggal', isEqualTo: tanggal)
-        .where('status', isNotEqualTo: AntrianStatus.batal);
-    if (jadwal != null) {
-      countQuery = countQuery.where('jadwalId', isEqualTo: jadwal.id);
-    }
-    final existingSnap = await countQuery.get();
-    if (existingSnap.docs.length >= kuotaMax) {
+    final activeAntrian = allAntrian.where((a) => a.status != AntrianStatus.batal);
+    final count = jadwal != null ? activeAntrian.where((a) => a.jadwalId == jadwal.id).length : activeAntrian.length;
+
+    if (count >= kuotaMax) {
       throw Exception('Kuota antrian sudah penuh untuk hari ini.');
     }
 
-    return _db.runTransaction<String>((trx) async {
-      final counterRef =
-          _db.collection('counters').doc('${poli.id}_$tanggal');
-      final counterSnap = await trx.get(counterRef);
-      final current =
-          counterSnap.exists ? (counterSnap.data()!['current'] as int) : 0;
-      final next = current + 1;
-      final nomor = formatNomorAntrian(poli.kode_poli ?? 'POL', next);
+    final next = await getNextCounter(poli.id!, tanggal);
+    final nomor = formatNomorAntrian(poli.kode_poli ?? 'POL', next);
 
-      trx.set(counterRef, {
-        'poliId': poli.id,
-        'tanggal': tanggal,
-        'current': next,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+    final antrian = Antrian(
+      poliId: poli.id!,
+      jadwalId: jadwal?.id,
+      pasienId: pasienId,
+      tanggal: tanggal,
+      nomorAntrian: nomor,
+      status: AntrianStatus.menunggu,
+      prioritas: prioritas,
+      waktuDaftar: DateTime.now(),
+    );
 
-      final antrianRef = _db.collection("antrian").doc();
-      trx.set(antrianRef, {
-        'poliId': poli.id,
-        'jadwalId': jadwal?.id,
-        'pasienId': pasienId,
-        'tanggal': tanggal,
-        'nomorAntrian': nomor,
-        'status': AntrianStatus.menunggu,
-        'prioritas': prioritas,
-        'waktuDaftar': FieldValue.serverTimestamp(),
-        'waktuDipanggil': null,
-        'catatan': null,
-      });
+    await ApiClient().post("?entity=antrian", antrian.toMap());
 
-      return nomor;
-    });
+    return nomor;
   }
 
-  Stream<List<Antrian>> streamAntrianHariIni(String poliId, String tanggal) {
-    return _db
-        .collection("antrian")
-        .where('poliId', isEqualTo: poliId)
-        .where('tanggal', isEqualTo: tanggal)
-        .orderBy('waktuDaftar')
-        .snapshots()
-        .map((snap) =>
-            snap.docs.map((d) => Antrian.fromDocumentSnapshot(d)).toList());
+  Future<List<Antrian>> getAntrianHariIni(String poliId, String tanggal) async {
+    final response = await ApiClient().get("?entity=antrian&poli_id=$poliId&tanggal=$tanggal");
+    final data = response.data['data'] as List;
+    final list = data.map((json) => Antrian.fromJson(json)).toList();
+    list.sort((a, b) => a.waktuDaftar.compareTo(b.waktuDaftar));
+    return list;
   }
 
   Future<Antrian?> panggilBerikutnya(String poliId, String tanggal) async {
-    return _db.runTransaction<Antrian?>((trx) async {
-      final menungguSnap = await _db
-          .collection("antrian")
-          .where('poliId', isEqualTo: poliId)
-          .where('tanggal', isEqualTo: tanggal)
-          .where('status', isEqualTo: AntrianStatus.menunggu)
-          .get();
+    final response = await ApiClient().get("?entity=antrian&poli_id=$poliId&tanggal=$tanggal");
+    final data = response.data['data'] as List;
+    final all = data.map((json) => Antrian.fromJson(json)).toList();
 
-      final dipanggilSnap = await _db
-          .collection("antrian")
-          .where('poliId', isEqualTo: poliId)
-          .where('tanggal', isEqualTo: tanggal)
-          .where('status', isEqualTo: AntrianStatus.dipanggil)
-          .get();
+    final dipanggil = all.where((a) => a.status == AntrianStatus.dipanggil).toList();
+    for (final doc in dipanggil) {
+      await updateStatus(doc.id!, AntrianStatus.selesai);
+    }
 
-      for (final doc in dipanggilSnap.docs) {
-        trx.update(doc.reference, {'status': AntrianStatus.selesai});
-      }
+    final menunggu = all.where((a) => a.status == AntrianStatus.menunggu).toList();
+    if (menunggu.isEmpty) return null;
 
-      if (menungguSnap.docs.isEmpty) return null;
+    final terurut = sortAntrianQueue(menunggu);
+    final berikutnya = terurut.first;
 
-      final daftarMenunggu =
-          menungguSnap.docs.map((d) => Antrian.fromDocumentSnapshot(d)).toList();
-      final terurut = sortAntrianQueue(daftarMenunggu);
-      final berikutnya = terurut.first;
-
-      trx.update(_db.collection("antrian").doc(berikutnya.id), {
-        'status': AntrianStatus.dipanggil,
-        'waktuDipanggil': FieldValue.serverTimestamp(),
-      });
-
-      berikutnya.status = AntrianStatus.dipanggil;
-      return berikutnya;
+    await ApiClient().put("?entity=antrian", {
+      'id': berikutnya.id,
+      'status': AntrianStatus.dipanggil,
+      'waktu_panggil': DateTime.now().toString(),
     });
+
+    berikutnya.status = AntrianStatus.dipanggil;
+    return berikutnya;
   }
 
   Future<void> updateStatus(String id, String status) async {
-    await _db.collection("antrian").doc(id).update({'status': status});
+    await ApiClient().put("?entity=antrian", {
+      'id': id,
+      'status': status,
+    });
   }
 
-  Stream<List<Antrian>> streamRiwayat(String poliId, String tanggal) {
-    return _db
-        .collection("antrian")
-        .where('poliId', isEqualTo: poliId)
-        .where('tanggal', isEqualTo: tanggal)
-        .orderBy('nomorAntrian')
-        .snapshots()
-        .map((snap) =>
-            snap.docs.map((d) => Antrian.fromDocumentSnapshot(d)).toList());
+  Future<List<Antrian>> getRiwayat(String poliId, String tanggal) async {
+    final response = await ApiClient().get("?entity=antrian&poli_id=$poliId&tanggal=$tanggal");
+    final data = response.data['data'] as List;
+    final list = data.map((json) => Antrian.fromJson(json)).toList();
+    list.sort((a, b) => a.nomorAntrian.compareTo(b.nomorAntrian));
+    return list;
   }
 }

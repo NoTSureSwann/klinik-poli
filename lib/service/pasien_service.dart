@@ -1,26 +1,22 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/pasien.dart';
+import '../helpers/api_client.dart';
 
-final FirebaseFirestore _db = FirebaseFirestore.instance;
-
-class PasienService{
-  addPasien(Pasien pasien) async {
-    await _db.collection("pasien").add(pasien.toMap());
+class PasienService {
+  Future<void> addPasien(Pasien pasien) async {
+    await ApiClient().post("?entity=pasien", pasien.toMap());
   }
 
-  updatePasien(Pasien pasien) async {
-    await _db.collection("pasien").doc(pasien.id).update(pasien.toMap());
+  Future<void> updatePasien(Pasien pasien) async {
+    await ApiClient().put("?entity=pasien", pasien.toMap());
   }
 
   Future<void> deletePasien(String id) async {
-    await _db.collection("pasien").doc(id).delete();
+    await ApiClient().delete("?entity=pasien&id=$id");
   }
 
   Future<List<Pasien>> retrievePasien() async {
-    QuerySnapshot<Map<String, dynamic>> snapshot =
-    await _db.collection("pasien").get();
-    return snapshot.docs
-        .map((docSnapshot) => Pasien.fromDocumentSnapshot(docSnapshot))
-        .toList();
+    final response = await ApiClient().get("?entity=pasien");
+    final data = response.data['data'] as List;
+    return data.map((json) => Pasien.fromJson(json)).toList();
   }
 }

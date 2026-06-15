@@ -6,7 +6,7 @@ import 'pegawai_detail_page.dart';
 class PegawaiUpdateForm extends StatefulWidget {
   final Pegawai pegawai;
 
-  const PegawaiUpdateForm({Key? key, required this.pegawai}) : super(key: key);
+  const PegawaiUpdateForm({super.key, required this.pegawai});
 
   @override
   State<PegawaiUpdateForm> createState() => _PegawaiUpdateFormState();
@@ -21,7 +21,8 @@ class _PegawaiUpdateFormState extends State<PegawaiUpdateForm> {
   final _emailPegawaiCtrl = TextEditingController();
   final _passwordPegawaiCtrl = TextEditingController();
 
-  void initState(){
+  @override
+  void initState() {
     super.initState();
     setState(() {
       _namaPegawaiCtrl.text = widget.pegawai.namaPegawai!;
@@ -35,53 +36,74 @@ class _PegawaiUpdateFormState extends State<PegawaiUpdateForm> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(title: Text("Ubah Pegawai")),
       body: SingleChildScrollView(
         child: Container(
           padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                _wTextField(namaField: "NIP Pegawai", namaController: _nipPegawaiCtrl, namaIcon: Icons.credit_card, tipekeyboard: TextInputType.number),
-                _wTextField(namaField: "Nama Pegawai", namaController: _namaPegawaiCtrl, namaIcon: Icons.people_alt),
-                _wTextField(namaField: "Tanggal Lahir Pegawai", namaController: _tglLahirPegawaiCtrl, namaIcon: Icons.date_range_outlined),
-                _wTextField(namaField: "Telp Pegawai", namaController: _telpPegawaiCtrl, namaIcon: Icons.phone, tipekeyboard: TextInputType.number),
-                _wTextField(namaField: "Email Pegawai", namaController: _emailPegawaiCtrl, namaIcon: Icons.email),
-                _wTextField(namaField: "Password Pegawai", namaController: _passwordPegawaiCtrl, namaIcon: Icons.lock),
-                _wTombolUbah()
-              ],
-            )
-          ),
+          child: Form(autovalidateMode: AutovalidateMode.onUserInteraction, 
+              key: _formKey,
+              child: Column(
+                children: [
+                  _wTextField(
+                      namaField: "NIP Pegawai",
+                      namaController: _nipPegawaiCtrl,
+                      namaIcon: Icons.credit_card,
+                      tipekeyboard: TextInputType.number),
+                  _wTextField(
+                      namaField: "Nama Pegawai",
+                      namaController: _namaPegawaiCtrl,
+                      namaIcon: Icons.people_alt),
+                  _wTextField(
+                      namaField: "Tanggal Lahir Pegawai",
+                      namaController: _tglLahirPegawaiCtrl,
+                      namaIcon: Icons.date_range_outlined),
+                  _wTextField(
+                      namaField: "Telp Pegawai",
+                      namaController: _telpPegawaiCtrl,
+                      namaIcon: Icons.phone,
+                      tipekeyboard: TextInputType.number),
+                  _wTextField(
+                      namaField: "Email Pegawai",
+                      namaController: _emailPegawaiCtrl,
+                      namaIcon: Icons.email),
+                  _wTextField(
+                      namaField: "Password Pegawai",
+                      namaController: _passwordPegawaiCtrl,
+                      namaIcon: Icons.lock),
+                  _wTombolUbah()
+                ],
+              )),
         ),
       ),
     );
   }
 
-  Widget _wTextField({required String namaField, required namaController, required namaIcon, tipekeyboard}){
+  Widget _wTextField(
+      {required String namaField,
+      required namaController,
+      required namaIcon,
+      tipekeyboard}) {
     double baseWidth = 360;
     double fem = MediaQuery.of(context).size.width / baseWidth;
 
-
     return Container(
-      padding: EdgeInsets.only(bottom: 15*fem),
+      padding: EdgeInsets.only(bottom: 15 * fem),
       child: TextField(
-        keyboardType: (tipekeyboard==null) ? TextInputType.text : tipekeyboard,
+        keyboardType:
+            (tipekeyboard == null) ? TextInputType.text : tipekeyboard,
         decoration: InputDecoration(
           labelText: namaField,
           prefixIcon: Icon(namaIcon),
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10*fem)
-          ),
+          border:
+              OutlineInputBorder(borderRadius: BorderRadius.circular(10 * fem)),
         ),
         controller: namaController,
       ),
     );
   }
 
-  Widget _wTombolUbah(){
+  Widget _wTombolUbah() {
     return ElevatedButton(
         onPressed: () async {
           Pegawai pegawai = Pegawai(
@@ -93,13 +115,12 @@ class _PegawaiUpdateFormState extends State<PegawaiUpdateForm> {
             passwordPegawai: _passwordPegawaiCtrl.text,
           );
           await PegawaiService().updatePegawai(pegawai).then((value) {
-            Navigator.pushReplacement(context,
-                MaterialPageRoute(builder:
-                    (context) => PegawaiDetailPage(pegawai: pegawai))
-            );
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => PegawaiDetailPage(pegawai: pegawai)));
           });
         },
-        child: Text("Ubah")
-    );
+        child: Text("Ubah"));
   }
 }

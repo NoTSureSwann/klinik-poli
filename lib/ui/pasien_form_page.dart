@@ -28,7 +28,7 @@ class _PasienFormState extends State<PasienForm> {
       body: SingleChildScrollView(
         child: Container(
           padding: EdgeInsets.fromLTRB(15*fem, 15*fem, 15*fem, 0*fem),
-          child: Form(
+          child: Form(autovalidateMode: AutovalidateMode.onUserInteraction, 
             key: _formKey,
             child: Column(
               children: [

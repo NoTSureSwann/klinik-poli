@@ -6,7 +6,7 @@ import '../helpers/validators.dart';
 
 class PoliUpdateForm extends StatefulWidget {
   final Poli poli;
-  const PoliUpdateForm({Key? key, required this.poli}) : super(key: key);
+  const PoliUpdateForm({super.key, required this.poli});
 
   @override
   State<PoliUpdateForm> createState() => _PoliUpdateFormState();
@@ -41,68 +41,67 @@ class _PoliUpdateFormState extends State<PoliUpdateForm> {
       body: SingleChildScrollView(
         child: Container(
           padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                _wTextField(
-                    namaField: "Nama Poli", 
-                    namaController: _namaPoliCtrl, 
-                    namaIcon: Icons.room_preferences_rounded,
-                    validator: requiredValidator),
-                SizedBox(height: 10),
-                _wTextField(
-                    namaField: "Kode Poli", 
-                    namaController: _kodePoliCtrl, 
-                    namaIcon: Icons.code,
-                    validator: kodePoliValidator),
-                SizedBox(height: 10),
-                _wTextField(
-                    namaField: "Deskripsi", 
-                    namaController: _deskripsiCtrl, 
-                    namaIcon: Icons.description,
-                    maxLength: 200),
-                SizedBox(height: 10),
-                _wTextField(
-                    namaField: "Kuota Harian", 
-                    namaController: _kuotaCtrl, 
-                    namaIcon: Icons.format_list_numbered,
-                    keyboardType: TextInputType.number,
-                    validator: (v) => positiveIntValidator(v, label: 'Kuota Harian')),
-                SizedBox(height: 10),
-                SwitchListTile(
-                  title: Text("Status Aktif"),
-                  value: _statusAktif,
-                  onChanged: (val) {
-                    setState(() {
-                      _statusAktif = val;
-                    });
-                  },
-                ),
-                SizedBox(height: 10),
-                _wTombolUbah()
-              ],
-            )),
+          child: Form(autovalidateMode: AutovalidateMode.onUserInteraction, 
+              key: _formKey,
+              child: Column(
+                children: [
+                  _wTextField(
+                      namaField: "Nama Poli",
+                      namaController: _namaPoliCtrl,
+                      namaIcon: Icons.room_preferences_rounded,
+                      validator: requiredValidator),
+                  SizedBox(height: 10),
+                  _wTextField(
+                      namaField: "Kode Poli",
+                      namaController: _kodePoliCtrl,
+                      namaIcon: Icons.code,
+                      validator: kodePoliValidator),
+                  SizedBox(height: 10),
+                  _wTextField(
+                      namaField: "Deskripsi",
+                      namaController: _deskripsiCtrl,
+                      namaIcon: Icons.description,
+                      maxLength: 200),
+                  SizedBox(height: 10),
+                  _wTextField(
+                      namaField: "Kuota Harian",
+                      namaController: _kuotaCtrl,
+                      namaIcon: Icons.format_list_numbered,
+                      keyboardType: TextInputType.number,
+                      validator: (v) =>
+                          positiveIntValidator(v, label: 'Kuota Harian')),
+                  SizedBox(height: 10),
+                  SwitchListTile(
+                    title: Text("Status Aktif"),
+                    value: _statusAktif,
+                    onChanged: (val) {
+                      setState(() {
+                        _statusAktif = val;
+                      });
+                    },
+                  ),
+                  SizedBox(height: 10),
+                  _wTombolUbah()
+                ],
+              )),
         ),
       ),
     );
   }
 
   Widget _wTextField({
-    required String namaField, 
-    required TextEditingController namaController, 
+    required String namaField,
+    required TextEditingController namaController,
     required IconData namaIcon,
     String? Function(String?)? validator,
     TextInputType? keyboardType,
     int? maxLength,
-  }){
+  }) {
     return TextFormField(
       decoration: InputDecoration(
         labelText: namaField,
         prefixIcon: Icon(namaIcon),
-        border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10)
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
       ),
       controller: namaController,
       validator: validator,
@@ -111,17 +110,17 @@ class _PoliUpdateFormState extends State<PoliUpdateForm> {
     );
   }
 
-  Widget _wTombolUbah(){
+  Widget _wTombolUbah() {
     return ElevatedButton(
         onPressed: () async {
           if (!_formKey.currentState!.validate()) return;
 
           final kode = _kodePoliCtrl.text.trim();
-          final isUnique = await PoliService().isKodePoliUnique(kode, excludeId: widget.poli.id);
+          final isUnique = await PoliService()
+              .isKodePoliUnique(kode, excludeId: widget.poli.id);
           if (!isUnique) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Kode Poli sudah digunakan poli lain"))
-            );
+                SnackBar(content: Text("Kode Poli sudah digunakan poli lain")));
             return;
           }
 
@@ -134,12 +133,12 @@ class _PoliUpdateFormState extends State<PoliUpdateForm> {
             status_aktif: _statusAktif,
           );
           await PoliService().updatePoli(poli).then((value) {
-            Navigator.pushReplacement(context,
-                MaterialPageRoute(builder:
-                    (context) => PoliDetailPage(poli: poli)));
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => PoliDetailPage(poli: poli)));
           });
         },
-        child: Text("Ubah")
-    );
+        child: Text("Ubah"));
   }
 }

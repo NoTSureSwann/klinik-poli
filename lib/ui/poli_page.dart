@@ -13,7 +13,7 @@ class PoliPage extends StatefulWidget {
 }
 
 class _PoliPageState extends State<PoliPage> {
-  PoliService _poliService = PoliService();
+  final PoliService _poliService = PoliService();
   Future<List<Poli>>? _poliList;
   List<Poli>? _retrievedPoliList;
 
@@ -29,7 +29,7 @@ class _PoliPageState extends State<PoliPage> {
   }
 
   Future refreshData() async {
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 1));
     setState(() {
       _initRetrieval();
     });
@@ -38,17 +38,18 @@ class _PoliPageState extends State<PoliPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: Sidebar(),
+      drawer: const Sidebar(),
       appBar: AppBar(
-        title: Text("Data Poli"),
+        title: const Text("Data Poli"),
         actions: [
           GestureDetector(
-            child: Padding(
+            child: const Padding(
               padding: EdgeInsets.all(8.0),
               child: Icon(Icons.add),
             ),
-            onTap: (){
-              Navigator.push(context, MaterialPageRoute(builder: (context) => PoliForm()));
+            onTap: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const PoliForm()));
             },
           )
         ],
@@ -56,34 +57,36 @@ class _PoliPageState extends State<PoliPage> {
       body: RefreshIndicator(
         onRefresh: refreshData,
         child: FutureBuilder(
-          future: _poliList,
-          builder: (BuildContext context, AsyncSnapshot<List<Poli>> snapshot) {
-            if(!snapshot.hasData){
-              return Center(child: CircularProgressIndicator());
-            }
-
-            return ListView.builder(
-              itemCount: _retrievedPoliList!.length,
-              itemBuilder: (context, index){
-                var poli = _retrievedPoliList![index];
-                return Dismissible(
-                  key: UniqueKey(),
-                  background: Container(
-                    color: Colors.redAccent,
-                    alignment: Alignment.centerRight,
-                    padding: EdgeInsets.only(right: 16),
-                    child: Icon(Icons.delete, color: Colors.white,),
-                  ),
-                  onDismissed: (direction){
-                    _poliService.deletePoli(poli.id!);
-                  },
-                  direction: DismissDirection.endToStart,
-                  child: PoliItemPage(poli: poli),
-                );
+            future: _poliList,
+            builder:
+                (BuildContext context, AsyncSnapshot<List<Poli>> snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
               }
-            );
-          }
-        ),
+
+              return ListView.builder(
+                  itemCount: _retrievedPoliList!.length,
+                  itemBuilder: (context, index) {
+                    var poli = _retrievedPoliList![index];
+                    return Dismissible(
+                      key: UniqueKey(),
+                      background: Container(
+                        color: Colors.redAccent,
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 16),
+                        child: const Icon(
+                          Icons.delete,
+                          color: Colors.white,
+                        ),
+                      ),
+                      onDismissed: (direction) {
+                        _poliService.deletePoli(poli.id!);
+                      },
+                      direction: DismissDirection.endToStart,
+                      child: PoliItemPage(poli: poli),
+                    );
+                  });
+            }),
       ),
     );
   }

@@ -33,7 +33,7 @@ class _PoliFormState extends State<PoliForm> {
       body: SingleChildScrollView(
         child: Container(
           padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
-          child: Form(
+          child: Form(autovalidateMode: AutovalidateMode.onUserInteraction, 
             key: _formKey,
             child: Column(
               children: [

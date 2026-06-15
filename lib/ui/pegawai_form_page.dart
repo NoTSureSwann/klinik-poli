@@ -30,7 +30,7 @@ class _PegawaiFormState extends State<PegawaiForm> {
       body: SingleChildScrollView(
         child: Container(
           padding: EdgeInsets.fromLTRB(15*fem, 15*fem, 15*fem, 0*fem),
-          child: Form(
+          child: Form(autovalidateMode: AutovalidateMode.onUserInteraction, 
             key: _formKey,
               child: Column(
               children: [
@@ -89,12 +89,12 @@ class _PegawaiFormState extends State<PegawaiForm> {
             emailPegawai: _emailPegawaiCtrl.text,
             passwordPegawai: _passwordPegawaiCtrl.text,
           );
-          await PegawaiService().addPegawai(pegawai).then((value) async {
-            Navigator.pushReplacement(context,
-                MaterialPageRoute(builder:
-                    (context) => PegawaiDetailPage(pegawai: pegawai))
-            );
-          });
+          await PegawaiService().addPegawai(pegawai);
+          if (!mounted) return;
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder:
+                  (context) => PegawaiDetailPage(pegawai: pegawai))
+          );
         },
         child: Text("Simpan")
     );

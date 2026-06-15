@@ -11,14 +11,19 @@ class PoliItemPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () async {
-        Navigator.push(context, MaterialPageRoute(builder:
-            (context) => PoliDetailPage(poli: poli)));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => PoliDetailPage(poli: poli)));
       },
       child: Card(
         elevation: 2,
-        margin: EdgeInsets.symmetric(vertical: 8),
+        margin: const EdgeInsets.symmetric(vertical: 8),
         child: ListTile(
-          title: Text(poli.nm_poli!, style: TextStyle(fontWeight: FontWeight.bold),),
+          title: Text(
+            poli.nm_poli!,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
         ),
       ),
     );

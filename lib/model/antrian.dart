@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class AntrianStatus {
   static const menunggu = 'menunggu';
@@ -16,10 +16,11 @@ class Antrian {
   String tanggal;
   String nomorAntrian;
   String status;
+  DateTime waktuDaftar;
+  DateTime? waktuPanggil;
+  DateTime? waktuSelesai;
   bool prioritas;
-  Timestamp waktuDaftar;
-  Timestamp? waktuDipanggil;
-  String? catatan;
+  String? keluhan;
 
   Antrian({
     this.id,
@@ -28,39 +29,42 @@ class Antrian {
     required this.pasienId,
     required this.tanggal,
     required this.nomorAntrian,
-    required this.status,
-    required this.prioritas,
+    this.status = AntrianStatus.menunggu,
     required this.waktuDaftar,
-    this.waktuDipanggil,
-    this.catatan,
+    this.waktuPanggil,
+    this.waktuSelesai,
+    this.prioritas = false,
+    this.keluhan,
   });
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'poliId': poliId,
-      'jadwalId': jadwalId,
-      'pasienId': pasienId,
+      'poli_id': poliId,
+      'jadwal_id': jadwalId,
+      'pasien_id': pasienId,
       'tanggal': tanggal,
-      'nomorAntrian': nomorAntrian,
+      'nomor_antrian': nomorAntrian,
       'status': status,
-      'prioritas': prioritas,
-      'waktuDaftar': waktuDaftar,
-      'waktuDipanggil': waktuDipanggil,
-      'catatan': catatan,
+      'waktu_daftar': waktuDaftar.toIso8601String(),
+      'waktu_panggil': waktuPanggil?.toIso8601String(),
+      'waktu_selesai': waktuSelesai?.toIso8601String(),
+      'prioritas': prioritas ? 1 : 0,
+      'keluhan': keluhan,
     };
   }
 
-  Antrian.fromDocumentSnapshot(DocumentSnapshot<Map<String, dynamic>> doc)
-      : id = doc.id,
-        poliId = doc.data()!['poliId'],
-        jadwalId = doc.data()!['jadwalId'],
-        pasienId = doc.data()!['pasienId'],
-        tanggal = doc.data()!['tanggal'],
-        nomorAntrian = doc.data()!['nomorAntrian'],
-        status = doc.data()!['status'],
-        prioritas = doc.data()!['prioritas'] ?? false,
-        waktuDaftar = doc.data()!['waktuDaftar'] as Timestamp? ?? Timestamp.now(),
-        waktuDipanggil = doc.data()!['waktuDipanggil'] as Timestamp?,
-        catatan = doc.data()!['catatan'];
+  Antrian.fromJson(Map<String, dynamic> json)
+      : id = json['id'],
+        poliId = json['poli_id'] ?? json['poliId'],
+        jadwalId = json['jadwal_id'] ?? json['jadwalId'],
+        pasienId = json['pasien_id'] ?? json['pasienId'],
+        tanggal = json['tanggal'],
+        nomorAntrian = json['nomor_antrian'] ?? json['nomorAntrian'],
+        status = json['status'],
+        waktuDaftar = DateTime.parse(json['waktu_daftar']),
+        waktuPanggil = json['waktu_panggil'] != null ? DateTime.parse(json['waktu_panggil']) : null,
+        waktuSelesai = json['waktu_selesai'] != null ? DateTime.parse(json['waktu_selesai']) : null,
+        prioritas = json['prioritas'] == 1 || json['prioritas'] == true,
+        keluhan = json['keluhan'];
 }

@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class Pegawai {
   String? id;
@@ -26,25 +26,25 @@ class Pegawai {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'nipPegawai': nipPegawai,
-      'namaPegawai': namaPegawai,
-      'tglLahirPegawai': tglLahirPegawai,
-      'telpPegawai': telpPegawai,
-      'emailPegawai': emailPegawai,
-      'passwordPegawai': passwordPegawai,
-      'jabatanPegawai': jabatanPegawai,
-      'poliId': poliId,
+      'nip_pegawai': nipPegawai,
+      'nama_pegawai': namaPegawai,
+      'tgllhr_pegawai': tglLahirPegawai,
+      'telp_pegawai': telpPegawai,
+      'email_pegawai': emailPegawai,
+      'password_pegawai': passwordPegawai,
+      'jabatan_pegawai': jabatanPegawai,
+      'poli_id': poliId,
     };
   }
 
-  Pegawai.fromDocumentSnapshot(DocumentSnapshot<Map<String, dynamic>> doc)
-      : id = doc.id,
-        nipPegawai = doc.data()!['nipPegawai'],
-        namaPegawai = doc.data()!['namaPegawai'],
-        tglLahirPegawai = doc.data()!['tglLahirPegawai'],
-        telpPegawai = doc.data()!['telpPegawai'],
-        emailPegawai = doc.data()!['emailPegawai'],
-        passwordPegawai = doc.data()!['passwordPegawai'],
-        jabatanPegawai = doc.data()!['jabatanPegawai'] ?? 'Perawat',
-        poliId = doc.data()!['poliId'];
+  Pegawai.fromJson(Map<String, dynamic> json)
+      : id = json['id'],
+        nipPegawai = json['nip_pegawai'] ?? json['nipPegawai'],
+        namaPegawai = json['nama_pegawai'] ?? json['namaPegawai'],
+        tglLahirPegawai = json['tgllhr_pegawai'] ?? json['tglLahirPegawai'],
+        telpPegawai = json['telp_pegawai'] ?? json['telpPegawai'],
+        emailPegawai = json['email_pegawai'] ?? json['emailPegawai'],
+        passwordPegawai = json['password_pegawai'] ?? json['passwordPegawai'],
+        jabatanPegawai = json['jabatan_pegawai'] ?? json['jabatanPegawai'] ?? 'Perawat',
+        poliId = json['poli_id'] ?? json['poliId'];
 }

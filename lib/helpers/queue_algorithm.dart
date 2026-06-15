@@ -1,26 +1,19 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/jadwal_poli.dart';
 import '../model/antrian.dart';
+import 'api_client.dart';
 
 String formatNomorAntrian(String kodePoli, int counter) {
   return '$kodePoli-${counter.toString().padLeft(3, '0')}';
 }
 
-Future<int> getNextCounter(
-    FirebaseFirestore db, String poliId, String tanggal) async {
-  final ref = db.collection('counters').doc('${poliId}_$tanggal');
-  return db.runTransaction<int>((trx) async {
-    final snap = await trx.get(ref);
-    final current = snap.exists ? (snap.data()!['current'] as int) : 0;
-    final next = current + 1;
-    trx.set(ref, {
-      'poliId': poliId,
-      'tanggal': tanggal,
-      'current': next,
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
-    return next;
-  });
+Future<int> getNextCounter(String poliId, String tanggal) async {
+  final response = await ApiClient().get("?action=next_counter&poli_id=$poliId&tanggal=$tanggal");
+  final data = response.data;
+  if (data['status'] == true) {
+    return data['counter'];
+  } else {
+    throw Exception("Gagal mendapatkan nomor antrian");
+  }
 }
 
 int timeToMinutes(String hhmm) {
@@ -52,33 +45,3 @@ List<Antrian> sortAntrianQueue(List<Antrian> daftar) {
   return hasil;
 }
 
-bool boyerMooreContains(String text, String pattern) {
-  if (pattern.isEmpty) return true;
-  final t = text.toLowerCase();
-  final p = pattern.toLowerCase();
-  final n = t.length;
-  final m = p.length;
-  if (m > n) return false;
-
-  final Map<String, int> badChar = {};
-  for (int i = 0; i < m; i++) {
-    badChar[p[i]] = i;
-  }
-
-  int s = 0;
-  while (s <= n - m) {
-    int j = m - 1;
-    while (j >= 0 && p[j] == t[s + j]) {
-      j--;
-    }
-    if (j < 0) {
-      return true;
-    } else {
-      final mismatch = t[s + j];
-      final lastOcc = badChar[mismatch] ?? -1;
-      final shift = j - lastOcc;
-      s += shift > 0 ? shift : 1;
-    }
-  }
-  return false;
-}

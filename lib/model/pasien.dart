@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class Pasien {
   String? id;
@@ -15,23 +15,23 @@ class Pasien {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'nomorRMPasien': nomorRMPasien,
-      'namaPasien': namaPasien,
-      'tgllhrPasien': tgllhrPasien,
-      'telpPasien': telpPasien,
-      'alamatPasien': alamatPasien,
+      'nomor_rm': nomorRMPasien,
+      'nama_pasien': namaPasien,
+      'tgllhr_pasien': tgllhrPasien,
+      'telp_pasien': telpPasien,
+      'alamat_pasien': alamatPasien,
       'username': username,
       'password': password,
     };
   }
 
-  Pasien.fromDocumentSnapshot(DocumentSnapshot<Map<String, dynamic>> doc)
-      : id = doc.id,
-        nomorRMPasien = doc.data()!['nomorRMPasien'],
-        namaPasien = doc.data()!['namaPasien'],
-        tgllhrPasien = doc.data()!['tgllhrPasien'],
-        telpPasien = doc.data()!['telpPasien'],
-        alamatPasien = doc.data()!['alamatPasien'],
-        username = doc.data()!['username'],
-        password = doc.data()!['password'];
+  Pasien.fromJson(Map<String, dynamic> json)
+      : id = json['id'],
+        nomorRMPasien = json['nomor_rm'] ?? json['nomorRMPasien'],
+        namaPasien = json['nama_pasien'] ?? json['namaPasien'],
+        tgllhrPasien = json['tgllhr_pasien'] ?? json['tgllhrPasien'],
+        telpPasien = json['telp_pasien'] ?? json['telpPasien'],
+        alamatPasien = json['alamat_pasien'] ?? json['alamatPasien'],
+        username = json['username'],
+        password = json['password'];
 }

@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../helpers/queue_algorithm.dart';
 
 class JadwalPoli {
@@ -25,25 +25,25 @@ class JadwalPoli {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'poliId': poliId,
-      'pegawaiId': pegawaiId,
+      'id_poli': poliId,
+      'id_pegawai': pegawaiId,
       'hari': hari,
-      'jamMulai': jamMulai,
-      'jamSelesai': jamSelesai,
+      'jam_mulai': jamMulai,
+      'jam_selesai': jamSelesai,
       'kuota': kuota,
-      'statusAktif': statusAktif,
+      'status_aktif': statusAktif ? 1 : 0,
     };
   }
 
-  JadwalPoli.fromDocumentSnapshot(DocumentSnapshot<Map<String, dynamic>> doc)
-      : id = doc.id,
-        poliId = doc.data()!['poliId'],
-        pegawaiId = doc.data()!['pegawaiId'],
-        hari = doc.data()!['hari'],
-        jamMulai = doc.data()!['jamMulai'],
-        jamSelesai = doc.data()!['jamSelesai'],
-        kuota = doc.data()!['kuota'] ?? 10,
-        statusAktif = doc.data()!['statusAktif'] ?? true;
+  JadwalPoli.fromJson(Map<String, dynamic> json)
+      : id = json['id'],
+        poliId = json['id_poli'] ?? json['poliId'] ?? '',
+        pegawaiId = json['id_pegawai'] ?? json['pegawaiId'] ?? '',
+        hari = json['hari'] ?? '',
+        jamMulai = json['jam_mulai'] ?? json['jamMulai'] ?? '',
+        jamSelesai = json['jam_selesai'] ?? json['jamSelesai'] ?? '',
+        kuota = json['kuota'] ?? 10,
+        statusAktif = json['status_aktif'] == 1 || json['statusAktif'] == true;
 
   int get jamMulaiMenit => timeToMinutes(jamMulai);
   int get jamSelesaiMenit => timeToMinutes(jamSelesai);

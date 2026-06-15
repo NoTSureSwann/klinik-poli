@@ -72,7 +72,7 @@ class _LoginState extends State<Login> {
               blur: 15,
               opacity: 0.1,
               padding: EdgeInsets.all(30),
-              child: Form(
+              child: Form(autovalidateMode: AutovalidateMode.onUserInteraction, 
                 key: _formKey,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

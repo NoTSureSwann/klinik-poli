@@ -15,88 +15,95 @@ class PoliDetailPage extends StatefulWidget {
 }
 
 class _PoliDetailPageState extends State<PoliDetailPage> {
-  PoliService _poliServiceNew = PoliService();
+  final PoliService _poliServiceNew = PoliService();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Detail Poli"),),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(height: 20),
-            Text(
-              "Nama Poli : ${widget.poli.nm_poli ?? '-'}",
-              style: TextStyle(fontSize: 20),
-            ),
-            SizedBox(height: 10),
-            Text(
-              "Kode Poli : ${widget.poli.kode_poli ?? '-'}",
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 10),
-            Text(
-              "Deskripsi : ${widget.poli.deskripsi_poli ?? '-'}",
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 10),
-            Text(
-              "Kuota Harian : ${widget.poli.kuota_harian}",
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 10),
-            Chip(
-              label: Text(widget.poli.status_aktif ? "Aktif" : "Non-Aktif", style: TextStyle(color: Colors.white)),
-              backgroundColor: widget.poli.status_aktif ? Colors.green : Colors.grey,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => JadwalPoliPage(poliFilter: widget.poli))
-                );
-              },
-              child: Text("Lihat Jadwal Poli Ini"),
-            ),
-            SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _tombolubah(),
-                _tombolhapus()
-              ],
-            )
-          ],
+        appBar: AppBar(
+          title: Text("Detail Poli"),
         ),
-      )
-    );
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              SizedBox(height: 20),
+              Text(
+                "Nama Poli : ${widget.poli.nm_poli ?? '-'}",
+                style: TextStyle(fontSize: 20),
+              ),
+              SizedBox(height: 10),
+              Text(
+                "Kode Poli : ${widget.poli.kode_poli ?? '-'}",
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 10),
+              Text(
+                "Deskripsi : ${widget.poli.deskripsi_poli ?? '-'}",
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 10),
+              Text(
+                "Kuota Harian : ${widget.poli.kuota_harian}",
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 10),
+              Chip(
+                label: Text(widget.poli.status_aktif ? "Aktif" : "Non-Aktif",
+                    style: TextStyle(color: Colors.white)),
+                backgroundColor:
+                    widget.poli.status_aktif ? Colors.green : Colors.grey,
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              JadwalPoliPage(poliFilter: widget.poli)));
+                },
+                child: Text("Lihat Jadwal Poli Ini"),
+              ),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [_tombolubah(), _tombolhapus()],
+              )
+            ],
+          ),
+        ));
   }
 
-  _tombolubah(){
+  ElevatedButton _tombolubah() {
     return ElevatedButton(
-      onPressed: (){
+      onPressed: () {
         Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => PoliUpdateForm(poli: widget.poli))
-        );
+            context,
+            MaterialPageRoute(
+                builder: (context) => PoliUpdateForm(poli: widget.poli)));
       },
-      style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.white),
+      style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.orange, foregroundColor: Colors.white),
       child: Text("Ubah"),
     );
   }
 
-  _tombolhapus(){
+  ElevatedButton _tombolhapus() {
     return ElevatedButton(
       onPressed: () async {
         bool hasJadwal = await _poliServiceNew.hasActiveJadwal(widget.poli.id!);
         if (hasJadwal) {
-          showDialog(context: context, builder: (context) => AlertDialog(
-            content: Text("Tidak dapat menghapus poli ini karena masih memiliki jadwal dokter aktif. Nonaktifkan/hapus jadwal terkait terlebih dahulu."),
-            actions: [
-              ElevatedButton(onPressed: () => Navigator.pop(context), child: Text("OK"))
-            ],
-          ));
+          showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                    content: Text(
+                        "Tidak dapat menghapus poli ini karena masih memiliki jadwal dokter aktif. Nonaktifkan/hapus jadwal terkait terlebih dahulu."),
+                    actions: [
+                      ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text("OK"))
+                    ],
+                  ));
           return;
         }
 
@@ -107,25 +114,29 @@ class _PoliDetailPageState extends State<PoliDetailPage> {
             ElevatedButton(
               onPressed: () async {
                 await _poliServiceNew.deletePoli(widget.poli.id!);
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PoliForm()));
+                Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (context) => const PoliForm()));
               },
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red, foregroundColor: Colors.white),
               child: Text("YA"),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
             ),
 
             // tombol batal
             ElevatedButton(
-              onPressed: (){
+              onPressed: () {
                 Navigator.pop(context);
               },
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey, foregroundColor: Colors.black),
               child: Text("Tidak"),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.grey, foregroundColor: Colors.black),
             )
           ],
         );
         showDialog(context: context, builder: (context) => alertDialog);
       },
-      style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+      style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.red, foregroundColor: Colors.white),
       child: Text("Hapus"),
     );
   }

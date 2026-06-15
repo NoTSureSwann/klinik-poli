@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class Poli {
   final String? id;
@@ -20,19 +20,19 @@ class Poli {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'nm_poli': nm_poli,
+      'nama_poli': nm_poli,
       'kode_poli': kode_poli,
       'deskripsi_poli': deskripsi_poli,
       'kuota_harian': kuota_harian,
-      'status_aktif': status_aktif,
+      'status_aktif': status_aktif ? 1 : 0,
     };
   }
 
-  Poli.fromDocumentSnapshot(DocumentSnapshot<Map<String, dynamic>> doc)
-      : id = doc.id,
-        nm_poli = doc.data()!['nm_poli'],
-        kode_poli = doc.data()!['kode_poli'],
-        deskripsi_poli = doc.data()!['deskripsi_poli'] ?? '',
-        kuota_harian = doc.data()!['kuota_harian'] ?? 30,
-        status_aktif = doc.data()!['status_aktif'] ?? true;
+  Poli.fromJson(Map<String, dynamic> json)
+      : id = json['id'],
+        nm_poli = json['nama_poli'] ?? json['nm_poli'],
+        kode_poli = json['kode_poli'],
+        deskripsi_poli = json['deskripsi_poli'] ?? '',
+        kuota_harian = json['kuota_harian'] != null ? int.tryParse(json['kuota_harian'].toString()) ?? 30 : 30,
+        status_aktif = json['status_aktif'] == 1 || json['status_aktif'] == true;
 }

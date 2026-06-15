@@ -19,11 +19,11 @@ class JadwalPoliFormPage extends StatefulWidget {
 
 class _JadwalPoliFormPageState extends State<JadwalPoliFormPage> {
   final _formKey = GlobalKey<FormState>();
-  
+
   String? _selectedPoliId;
   String? _selectedDokterId;
   String? _selectedHari;
-  
+
   final _jamMulaiCtrl = TextEditingController();
   final _jamSelesaiCtrl = TextEditingController();
   final _kuotaCtrl = TextEditingController(text: '10');
@@ -44,49 +44,49 @@ class _JadwalPoliFormPageState extends State<JadwalPoliFormPage> {
       body: SingleChildScrollView(
         child: Container(
           padding: EdgeInsets.all(15),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                _buildPoliDropdown(),
-                SizedBox(height: 10),
-                _buildDokterDropdown(),
-                SizedBox(height: 10),
-                _buildHariDropdown(),
-                SizedBox(height: 10),
-                _wTextField(
-                    namaField: "Jam Mulai (HH:mm)", 
-                    namaController: _jamMulaiCtrl, 
-                    namaIcon: Icons.access_time,
-                    validator: timeFormatValidator),
-                SizedBox(height: 10),
-                _wTextField(
-                    namaField: "Jam Selesai (HH:mm)", 
-                    namaController: _jamSelesaiCtrl, 
-                    namaIcon: Icons.access_time_filled,
-                    validator: timeFormatValidator),
-                SizedBox(height: 10),
-                _wTextField(
-                    namaField: "Kuota", 
-                    namaController: _kuotaCtrl, 
-                    namaIcon: Icons.people,
-                    keyboardType: TextInputType.number,
-                    validator: (v) => positiveIntValidator(v, label: 'Kuota')),
-                SizedBox(height: 10),
-                SwitchListTile(
-                  title: Text("Status Aktif"),
-                  value: _statusAktif,
-                  onChanged: (val) {
-                    setState(() {
-                      _statusAktif = val;
-                    });
-                  },
-                ),
-                SizedBox(height: 10),
-                _wTombolSimpan()
-              ],
-            )
-          ),
+          child: Form(autovalidateMode: AutovalidateMode.onUserInteraction, 
+              key: _formKey,
+              child: Column(
+                children: [
+                  _buildPoliDropdown(),
+                  SizedBox(height: 10),
+                  _buildDokterDropdown(),
+                  SizedBox(height: 10),
+                  _buildHariDropdown(),
+                  SizedBox(height: 10),
+                  _wTextField(
+                      namaField: "Jam Mulai (HH:mm)",
+                      namaController: _jamMulaiCtrl,
+                      namaIcon: Icons.access_time,
+                      validator: timeFormatValidator),
+                  SizedBox(height: 10),
+                  _wTextField(
+                      namaField: "Jam Selesai (HH:mm)",
+                      namaController: _jamSelesaiCtrl,
+                      namaIcon: Icons.access_time_filled,
+                      validator: timeFormatValidator),
+                  SizedBox(height: 10),
+                  _wTextField(
+                      namaField: "Kuota",
+                      namaController: _kuotaCtrl,
+                      namaIcon: Icons.people,
+                      keyboardType: TextInputType.number,
+                      validator: (v) =>
+                          positiveIntValidator(v, label: 'Kuota')),
+                  SizedBox(height: 10),
+                  SwitchListTile(
+                    title: Text("Status Aktif"),
+                    value: _statusAktif,
+                    onChanged: (val) {
+                      setState(() {
+                        _statusAktif = val;
+                      });
+                    },
+                  ),
+                  SizedBox(height: 10),
+                  _wTombolSimpan()
+                ],
+              )),
         ),
       ),
     );
@@ -94,45 +94,57 @@ class _JadwalPoliFormPageState extends State<JadwalPoliFormPage> {
 
   Widget _buildPoliDropdown() {
     return StreamBuilder<List<Poli>>(
-      stream: PoliService().streamPoli(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) return CircularProgressIndicator();
-        final list = snapshot.data!.where((p) => p.status_aktif).toList();
-        return DropdownButtonFormField<String>(
-          decoration: InputDecoration(
-            labelText: "Pilih Poli",
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-          value: _selectedPoliId,
-          items: list.map((e) => DropdownMenuItem(value: e.id, child: Text(e.nm_poli ?? ''))).toList(),
-          onChanged: widget.poliFilter != null ? null : (val) {
-            setState(() { _selectedPoliId = val; });
-          },
-          validator: (v) => v == null ? 'Poli wajib dipilih' : null,
-        );
-      }
-    );
+        stream: PoliService().streamPoli(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) return CircularProgressIndicator();
+          final list = snapshot.data!.where((p) => p.status_aktif).toList();
+          return DropdownButtonFormField<String>(
+            decoration: InputDecoration(
+              labelText: "Pilih Poli",
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            initialValue: _selectedPoliId,
+            items: list
+                .map((e) =>
+                    DropdownMenuItem(value: e.id, child: Text(e.nm_poli ?? '')))
+                .toList(),
+            onChanged: widget.poliFilter != null
+                ? null
+                : (val) {
+                    setState(() {
+                      _selectedPoliId = val;
+                    });
+                  },
+            validator: (v) => v == null ? 'Poli wajib dipilih' : null,
+          );
+        });
   }
 
   Widget _buildDokterDropdown() {
     return FutureBuilder<List<Pegawai>>(
-      future: PegawaiService().retrieveDokter(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) return CircularProgressIndicator();
-        return DropdownButtonFormField<String>(
-          decoration: InputDecoration(
-            labelText: "Pilih Dokter",
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-          value: _selectedDokterId,
-          items: snapshot.data!.map((e) => DropdownMenuItem(value: e.id, child: Text(e.namaPegawai ?? ''))).toList(),
-          onChanged: (val) {
-            setState(() { _selectedDokterId = val; });
-          },
-          validator: (v) => v == null ? 'Dokter wajib dipilih' : null,
-        );
-      }
-    );
+        future: PegawaiService().retrieveDokter(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) return CircularProgressIndicator();
+          return DropdownButtonFormField<String>(
+            decoration: InputDecoration(
+              labelText: "Pilih Dokter",
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            initialValue: _selectedDokterId,
+            items: snapshot.data!
+                .map((e) => DropdownMenuItem(
+                    value: e.id, child: Text(e.namaPegawai ?? '')))
+                .toList(),
+            onChanged: (val) {
+              setState(() {
+                _selectedDokterId = val;
+              });
+            },
+            validator: (v) => v == null ? 'Dokter wajib dipilih' : null,
+          );
+        });
   }
 
   Widget _buildHariDropdown() {
@@ -141,29 +153,31 @@ class _JadwalPoliFormPageState extends State<JadwalPoliFormPage> {
         labelText: "Pilih Hari",
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
       ),
-      value: _selectedHari,
-      items: daftarHari.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+      initialValue: _selectedHari,
+      items: daftarHari
+          .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+          .toList(),
       onChanged: (val) {
-        setState(() { _selectedHari = val; });
+        setState(() {
+          _selectedHari = val;
+        });
       },
       validator: (v) => v == null ? 'Hari wajib dipilih' : null,
     );
   }
 
   Widget _wTextField({
-    required String namaField, 
-    required TextEditingController namaController, 
+    required String namaField,
+    required TextEditingController namaController,
     required IconData namaIcon,
     String? Function(String?)? validator,
     TextInputType? keyboardType,
-  }){
+  }) {
     return TextFormField(
       decoration: InputDecoration(
         labelText: namaField,
         prefixIcon: Icon(namaIcon),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10)
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
       ),
       controller: namaController,
       validator: validator,
@@ -173,41 +187,45 @@ class _JadwalPoliFormPageState extends State<JadwalPoliFormPage> {
 
   Widget _wTombolSimpan() {
     return ElevatedButton(
-      onPressed: () async {
-        if (!_formKey.currentState!.validate()) return;
-        if (timeToMinutes(_jamSelesaiCtrl.text.trim()) <= timeToMinutes(_jamMulaiCtrl.text.trim())) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Jam selesai harus setelah jam mulai"))
+        onPressed: () async {
+          if (!_formKey.currentState!.validate()) return;
+          if (timeToMinutes(_jamSelesaiCtrl.text.trim()) <=
+              timeToMinutes(_jamMulaiCtrl.text.trim())) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Jam selesai harus setelah jam mulai")));
+            return;
+          }
+
+          JadwalPoli jadwalBaru = JadwalPoli(
+            poliId: _selectedPoliId!,
+            pegawaiId: _selectedDokterId!,
+            hari: _selectedHari!,
+            jamMulai: _jamMulaiCtrl.text.trim(),
+            jamSelesai: _jamSelesaiCtrl.text.trim(),
+            kuota: int.parse(_kuotaCtrl.text.trim()),
+            statusAktif: _statusAktif,
           );
-          return;
-        }
 
-        JadwalPoli jadwalBaru = JadwalPoli(
-          poliId: _selectedPoliId!,
-          pegawaiId: _selectedDokterId!,
-          hari: _selectedHari!,
-          jamMulai: _jamMulaiCtrl.text.trim(),
-          jamSelesai: _jamSelesaiCtrl.text.trim(),
-          kuota: int.parse(_kuotaCtrl.text.trim()),
-          statusAktif: _statusAktif,
-        );
+          final service = JadwalPoliService();
+          final hasConflict = await service.hasConflict(jadwalBaru);
+          if (hasConflict) {
+            showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                      content: Text(
+                          "Jadwal bertabrakan dengan jadwal dokter ini di hari & jam yang sama (cek poli/jadwal lain milik dokter tersebut)."),
+                      actions: [
+                        ElevatedButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text("OK"))
+                      ],
+                    ));
+            return;
+          }
 
-        final service = JadwalPoliService();
-        final hasConflict = await service.hasConflict(jadwalBaru);
-        if (hasConflict) {
-          showDialog(context: context, builder: (context) => AlertDialog(
-            content: Text("Jadwal bertabrakan dengan jadwal dokter ini di hari & jam yang sama (cek poli/jadwal lain milik dokter tersebut)."),
-            actions: [
-              ElevatedButton(onPressed: () => Navigator.pop(context), child: Text("OK"))
-            ],
-          ));
-          return;
-        }
-
-        await service.addJadwal(jadwalBaru);
-        Navigator.pop(context);
-      },
-      child: Text("Simpan")
-    );
+          await service.addJadwal(jadwalBaru);
+          Navigator.pop(context);
+        },
+        child: Text("Simpan"));
   }
 }

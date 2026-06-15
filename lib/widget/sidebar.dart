@@ -8,6 +8,7 @@ import '../helpers/theme_helper.dart';
 import '../ui/jadwal_poli_page.dart';
 import '../ui/antrian_menu_page.dart';
 import '../ui/chatbot_page.dart';
+import '../ui/obat_page.dart';
 
 class Sidebar extends StatelessWidget {
   const Sidebar({super.key});
@@ -77,6 +78,22 @@ class Sidebar extends StatelessWidget {
             onTap: (){
               Navigator.push(
                   context, MaterialPageRoute(builder: (context) => PasienPage()));
+            },
+          ),
+
+          ListTile(
+            leading: Icon(Icons.medication),
+            title: Text("Farmasi (Obat)"),
+            onTap: (){
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ObatPage()));
+            },
+          ),
+
+          ListTile(
+            leading: Icon(Icons.medical_information),
+            title: Text("Rekam Medis"),
+            onTap: (){
+              // Navigator.push(context, MaterialPageRoute(builder: (context) => RekamMedisPage()));
             },
           ),
 
